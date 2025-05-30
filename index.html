@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USD Value Over Time</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        table {
+            width: 50%;
+            margin: auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>US Dollar Value from 1970 to Present</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Year</th>
+                <th>Value (USD)</th>
+            </tr>
+        </thead>
+        <tbody id="usdTable">
+        </tbody>
+    </table>
+
+    <script>
+        const usdValues = {
+            1970: 1.00, 1975: 1.39, 1980: 2.12, 1985: 2.77, 1990: 3.37, 
+            1995: 3.93, 2000: 4.44, 2005: 5.03, 2010: 5.62, 2015: 6.11, 
+            2020: 6.67, 2025: 8.24 // Example values based on inflation data
+        };
+
+        const tableBody = document.getElementById("usdTable");
+
+        for (const year in usdValues) {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${year}</td><td>$${usdValues[year].toFixed(2)}</td>`;
+            tableBody.appendChild(row);
+        }
+    </script>
+</body>
+</html>
