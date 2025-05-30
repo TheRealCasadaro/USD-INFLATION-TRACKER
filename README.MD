@@ -4,7 +4,7 @@ Absolutely! Here’s a suggested name and folder structure for your application:
 
 **USD Inflation Tracker**
 
-### **Folder Structure:**
+### **📁 Folder Structure:**
 
 ```
 USD-Inflation-Tracker/
@@ -28,3 +28,13 @@ Each folder has a purpose:
 - **`components/`** is useful if you plan to modularize elements (like React/Vue).
 - **`server/`** is optional for back-end needs if pulling real-time data.
 
+
+### **🚀 Version Control Strategy**
+
+#### **Core Branching Model**
+
+* `main`** (Stable Production)** → Holds the official, stable version of the system.
+* `develop`** (Active Development)** → Contains work-in-progress features, updates, and improvements.
+* `feature/*`** (New Features)** → Each major addition is developed independently before merging into `develop`.
+* `hotfix/*`** (Urgent Fixes)** → Used for emergency patches applied directly to production.
+* `release/*`** (Final Testing & Pre-Deployment)** → Ensures stability before moving changes to `main`.
