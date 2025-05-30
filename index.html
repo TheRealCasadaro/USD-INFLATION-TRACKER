@@ -11,7 +11,7 @@
             margin: 20px;
         }
         table {
-            width: 50%;
+            width: 70%;
             margin: auto;
             border-collapse: collapse;
         }
@@ -19,15 +19,102 @@
             border: 1px solid black;
             padding: 10px;
         }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, button {
+            padding: 8px;
+            width: 100%;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .calculator-container {
+            margin: 30px auto;
+            max-width: 500px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-radius: 5px;
+            display: none;
+        }
+        .result table {
+            width: 100%;
+        }
+        .explanation {
+            max-width: 70%;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #e3f2fd;
+            border-radius: 5px;
+            text-align: left;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
-    <h1>US Dollar Value from 1970 to Present</h1>
+    <h1 id="appTitle">US Dollar Value from 1970 to Present</h1>
+    
+    <div class="calculator-container">
+        <h2>Value Over Time Calculator</h2>
+        <div class="form-group">
+            <label for="startYear">Start Year:</label>
+            <input type="number" id="startYear" min="1970" max="2025" placeholder="Enter start year (1970-2025)">
+        </div>
+        <div class="form-group">
+            <label for="startAmount">Original Amount (USD):</label>
+            <input type="number" id="startAmount" min="0" step="0.01" placeholder="Enter amount">
+        </div>
+        <button id="calculateBtn">Calculate Value Over Time</button>
+        
+        <div id="calculationResult" class="result">
+            <h3>Your <span id="originalYear"></span> dollars over time:</h3>
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Equivalent Value</th>
+                        <th>Inflation Factor</th>
+                    </tr>
+                </thead>
+                <tbody id="resultTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <h2>Inflation Data Table</h2>
+    <div class="explanation">
+        <h3>Understanding the Inflation Data Table</h3>
+        <p>This table shows the relative value of the US Dollar over time compared to its value in 1970 (baseline of $1.00).</p>
+        <p><strong>Year:</strong> The reference year for the value.</p>
+        <p><strong>Value (USD):</strong> How much a 1970 dollar is worth in that year. For example, a value of $2.12 in 1980 means that $1.00 in 1970 had the same purchasing power as $2.12 in 1980.</p>
+        <p><strong>Why this matters:</strong> Inflation erodes the purchasing power of money over time. These values help you understand how the cost of living has changed and how your money's value has been affected by inflation.</p>
+        <p>The calculator above uses these values to determine the equivalent purchasing power of your money across different time periods.</p>
+    </div>
+    
     <table>
         <thead>
             <tr>
                 <th>Year</th>
                 <th>Value (USD)</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody id="usdTable">
@@ -35,19 +122,160 @@
     </table>
 
     <script>
-        const usdValues = {
+        // Initial USD values
+        let usdValues = {
             1970: 1.00, 1975: 1.39, 1980: 2.12, 1985: 2.77, 1990: 3.37, 
             1995: 3.93, 2000: 4.44, 2005: 5.03, 2010: 5.62, 2015: 6.11, 
             2020: 6.67, 2025: 8.24 // Example values based on inflation data
         };
 
-        const tableBody = document.getElementById("usdTable");
-
-        for (const year in usdValues) {
-            const row = document.createElement("tr");
-            row.innerHTML = `<td>${year}</td><td>$${usdValues[year].toFixed(2)}</td>`;
-            tableBody.appendChild(row);
+        // Function to render the table
+        function renderTable() {
+            const tableBody = document.getElementById("usdTable");
+            tableBody.innerHTML = ''; // Clear existing table
+            
+            // Sort the years
+            const years = Object.keys(usdValues).sort((a, b) => a - b);
+            
+            for (const year of years) {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${year}</td>
+                    <td>$${usdValues[year].toFixed(2)}</td>
+                    <td><button class="delete-btn" data-year="${year}">Delete</button></td>
+                `;
+                tableBody.appendChild(row);
+            }
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const year = this.getAttribute('data-year');
+                    delete usdValues[year];
+                    renderTable();
+                });
+            });
         }
+        
+        // Function to calculate value over time
+        function calculateValueOverTime(startYear, amount) {
+            // Get the inflation factor for the start year
+            const startYearValue = getValueForYear(startYear);
+            if (startYearValue === null) {
+                alert('Start year not in dataset. Please add this year or choose another.');
+                return null;
+            }
+            
+            // Get all years from start year to 2025
+            const years = Object.keys(usdValues)
+                .map(y => parseInt(y))
+                .filter(y => y >= startYear)
+                .sort((a, b) => a - b);
+            
+            const results = [];
+            
+            for (const year of years) {
+                const yearValue = usdValues[year];
+                const inflationFactor = yearValue / startYearValue;
+                const equivalentValue = amount * inflationFactor;
+                
+                results.push({
+                    year,
+                    equivalentValue,
+                    inflationFactor
+                });
+            }
+            
+            return results;
+        }
+        
+        // Function to get the value for a specific year, interpolating if necessary
+        function getValueForYear(year) {
+            year = parseInt(year);
+            
+            // If we have the exact year, return it
+            if (usdValues[year] !== undefined) {
+                return usdValues[year];
+            }
+            
+            // Otherwise, find the closest years before and after
+            const years = Object.keys(usdValues).map(y => parseInt(y)).sort((a, b) => a - b);
+            
+            // Check if year is before our earliest data
+            if (year < years[0]) {
+                return null;
+            }
+            
+            // Check if year is after our latest data
+            if (year > years[years.length - 1]) {
+                return null;
+            }
+            
+            // Find surrounding years
+            let beforeYear = null;
+            let afterYear = null;
+            
+            for (let i = 0; i < years.length; i++) {
+                if (years[i] < year) {
+                    beforeYear = years[i];
+                } else {
+                    afterYear = years[i];
+                    break;
+                }
+            }
+            
+            // Linear interpolation
+            const beforeValue = usdValues[beforeYear];
+            const afterValue = usdValues[afterYear];
+            const ratio = (year - beforeYear) / (afterYear - beforeYear);
+            
+            return beforeValue + ratio * (afterValue - beforeValue);
+        }
+        
+        // Function to update the app title
+        function updateAppTitle(startYear) {
+            const currentYear = new Date().getFullYear();
+            document.getElementById('appTitle').textContent = `US Dollar Value from ${startYear} to ${currentYear}`;
+        }
+        
+        // Calculate button click handler
+        document.getElementById('calculateBtn').addEventListener('click', function() {
+            const startYear = parseInt(document.getElementById('startYear').value);
+            const amount = parseFloat(document.getElementById('startAmount').value);
+            
+            if (isNaN(startYear) || isNaN(amount)) {
+                alert('Please enter valid numbers for both year and amount');
+                return;
+            }
+            
+            // Update the app title with the selected year
+            updateAppTitle(startYear);
+            
+            const results = calculateValueOverTime(startYear, amount);
+            if (results === null) return;
+            
+            // Display results
+            const resultDiv = document.getElementById('calculationResult');
+            const tableBody = document.getElementById('resultTableBody');
+            document.getElementById('originalYear').textContent = startYear;
+            
+            tableBody.innerHTML = '';
+            
+            for (const result of results) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${result.year}</td>
+                    <td>$${result.equivalentValue.toFixed(2)}</td>
+                    <td>${result.inflationFactor.toFixed(2)}x</td>
+                `;
+                tableBody.appendChild(row);
+            }
+            
+            resultDiv.style.display = 'block';
+        });
+        
+        // Initial render
+        renderTable();
     </script>
 </body>
 </html>
